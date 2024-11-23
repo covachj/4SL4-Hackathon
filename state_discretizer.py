@@ -52,6 +52,7 @@ class StateDiscretizer:
         self.state_range = self.state_high - self.state_low
         
     def discretize(self, state):
+        
         # Normalize continuous state variables (first 6 dimensions) to [0, 1]
         continuous_state = state[:6]
         scaled_state = (continuous_state - self.state_low[:6]) / self.state_range[:6]
