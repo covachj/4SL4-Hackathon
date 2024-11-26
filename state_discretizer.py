@@ -41,7 +41,7 @@ def tiles(iht, num_tilings, floats, ints=[]):
     return tiles
 
 class StateDiscretizer:
-    def __init__(self, env, num_tilings=32, tiles_per_dim=8, iht_size=4096):
+    def __init__(self, env, num_tilings=16, tiles_per_dim=8, iht_size=65536):
         self.env = env
         self.num_tilings = num_tilings
         self.tiles_per_dim = tiles_per_dim

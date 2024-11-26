@@ -9,8 +9,8 @@ from agent_template import LunarLanderAgent  # Ensure this is the correct class 
 SERVER_URL = 'http://srv-cad.ece.mcmaster.ca:65000'  # Server URL
 
 # Define team credentials directly in the script
-TEAM_NAME = 'Team Awesome'  # Replace with your actual team name
-TEAM_SECRET_CODE = 'your-secret-code'  # Replace with your actual secret code
+TEAM_NAME = 'The AIvengers'  # Replace with your actual team name
+TEAM_SECRET_CODE = 'c55843ac-338c-4c70-82a5-3690852c0ff2'  # Replace with your actual secret code
 
 class AgentSubmission:
     def __init__(self, agent):
@@ -136,11 +136,11 @@ if __name__ == '__main__':
 
     agent = LunarLanderAgent()  # Ensure this is the correct class of your trained agent
 
-    agent_model_file = 'model.pkl'  # Set the trained agent's model file name
+    agent_model_file = 'model3.pkl'  # Set the trained agent's model file name
 
     # Load the trained model
     print("loading Agent...")
-    agent.load_model(agent_model_file)
+    agent.load_agent(agent_model_file)
     
     # Submit the solution
     print("Submitting the solution...")
