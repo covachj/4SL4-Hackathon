@@ -37,7 +37,7 @@ class LunarLanderAgent:
         self.min_epsilon = 0.01   # Minimum exploration rate
         self.gamma = 0.99
         # Initialize any other parameters and variables
-
+        self.total_steps = 0  # To keep track of total steps taken
 
 
     def select_action(self, state,test_mode= True):
