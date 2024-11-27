@@ -3,7 +3,7 @@
 import numpy as np
 import webbrowser
 import socketio
-from agent_template import LunarLanderAgent  # Ensure this is the correct class of your trained agent
+from Deep_QNN_Agent import LunarLanderAgent  # Ensure this is the correct class of your trained agent
 
 # Configuration
 SERVER_URL = 'http://srv-cad.ece.mcmaster.ca:65000'  # Server URL
@@ -136,7 +136,7 @@ if __name__ == '__main__':
 
     agent = LunarLanderAgent()  # Ensure this is the correct class of your trained agent
 
-    agent_model_file = 'model3.pkl'  # Set the trained agent's model file name
+    agent_model_file = 'DQN.pth'  # Set the trained agent's model file name
 
     # Load the trained model
     print("loading Agent...")
