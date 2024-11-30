@@ -86,7 +86,7 @@ class LunarLanderAgent():
 
         # Set parameters & Utils
         self.BATCH_SIZE = 64
-        self.DISCOUNT_FACTOR = 0.99
+        self.DISCOUNT_FACTOR = 0.999
         self.EPS_START = 0.9
         self.EPS_END = 0.05
         self.EPS_DECAY = 1000
@@ -96,6 +96,7 @@ class LunarLanderAgent():
         self.memory = ReplayMemory(10000)
         self.steps_complete = 0
         self.episode_durations = []
+        self.avg_rewards = []
     
     def select_action(self, state, TRAIN = False):
         """
@@ -108,8 +109,11 @@ class LunarLanderAgent():
         Returns:
             int: The action to take.
         """
+
+        state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
         sample = random.random()
-        eps_threshold = self.EPS_END + (self.EPS_START - self.EPS_END) * math.exp(-1. * self.steps_complete / self.EPS_DECAY)
+        eps_threshold = self.EPS_END + (self.EPS_START - self.EPS_END) * \
+        math.exp(-1. * self.steps_complete / self.EPS_DECAY)
         self.steps_complete += 1
         if sample < eps_threshold and TRAIN:
             return torch.tensor([[self.env.action_space.sample()]], device=device, dtype=torch.long)
@@ -118,8 +122,7 @@ class LunarLanderAgent():
               # t.max(1) will return the largest column value of each row.
               # second column on max result is index of where max element was
               # found, so we pick action with the larger expected reward.
-              state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
-              return (self.policy(state).max(1).indices.view(1, 1)).numpy()[0,0]
+              return self.policy(state).max(1).indices.view(1, 1).numpy()[0,0]
             
         
     def plot_durations(self, show_result=False):
@@ -195,10 +198,9 @@ class LunarLanderAgent():
         for i_episode in range(num_episodes):
             # Initialize the environment and get its state
             self.state, self.info = self.env.reset()
-            self.state = torch.tensor(self.state, dtype=torch.float32, device=device).unsqueeze(0)
             reward_sum = 0
             for t in count():
-                action = self.select_action(self.state, TRAIN = True)
+                action = torch.tensor(np.reshape(np.asarray(self.select_action(self.state, TRAIN = True)), (1,1)))
                 observation, reward, terminated, truncated, _ = self.env.step(action.item())
                 reward_sum += reward
                 reward = torch.tensor([reward], device=device)
@@ -210,7 +212,7 @@ class LunarLanderAgent():
                     next_state = torch.tensor(observation, dtype=torch.float32, device=device).unsqueeze(0)
 
                 # Store the transition in memory
-                self.memory.push(self.state, action, next_state, reward)
+                self.memory.push(torch.tensor(np.reshape(self.state, (1,-1))), action, next_state, reward)
 
                 # Move to the next state
                 self.state = next_state
@@ -230,19 +232,18 @@ class LunarLanderAgent():
                     self.episode_durations.append(t + 1)
                     # self.plot_durations()
                     break
+                
+                self.state = np.reshape(self.state.numpy(), (1,-1))[0]
             print(f"Reward = {reward_sum}, EP = {i_episode}")
             rewards.append(reward_sum)
-            if len(rewards) >= 100:
-                avg = sum(rewards)/100
-                if avg > top_reward:
-                    top_reward = avg
-                    print(f"Model Written, Reward: {top_reward}")
-                    self.save_agent("DQN.pth")
+            avg = sum(rewards)/100
+            self.avg_rewards.append(avg)
+            if avg > top_reward:
+                top_reward = avg
+                print(f"Model Written, Reward: {top_reward}")
+                self.save_agent("DQN.pth")
 
         print('Complete')
-        self.plot_durations(show_result=True)
-        plt.ioff()
-        plt.show()
 
 
 
@@ -279,17 +280,14 @@ class LunarLanderAgent():
             state, _ = self.env.reset()
             done = False
             total_reward = 0
-            state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
 
             while not done:
                 # y Bdefault, select_action operates in test_mode=True
-                action = self.select_action(state)
+                action = torch.tensor(np.reshape(np.asarray(self.select_action(state, TRAIN = True)), (1,1)))
                 next_state, reward, terminated, truncated, info = self.env.step(action.item())
                 done = terminated or truncated
                 if terminated:
                     next_state = None
-                else:
-                    next_state = torch.tensor(next_state, dtype=torch.float32, device=device).unsqueeze(0)
 
                 state = next_state
                 total_reward += reward
@@ -318,7 +316,6 @@ class LunarLanderAgent():
         """
         self.policy.load_state_dict(torch.load(file_name, weights_only=True))
         print(f"Model loaded from {file_name}.")
-        
 
 if __name__ == '__main__':
 
@@ -328,11 +325,13 @@ if __name__ == '__main__':
     # Example usage:
     # Uncomment the following lines to train your agent and save the model
 
-    # num_training_episodes = 1000 # Define the number of training episodes
-    # print("Training the agent...")
-    # agent.train(num_training_episodes)
-    # print("Training completed.")
-    
+    num_training_episodes = 1000 # Define the number of training episodes
+    print("Training the agent...")
+    agent.train(num_training_episodes)
+    print("Training completed.")
+    plt.plot(range(num_training_episodes),agent.avg_rewards)
+    plt.title("Avg cumulative Reward")
+    plt.show()
     agent.load_agent(agent_model_file)
     agent.test()
 
