@@ -89,7 +89,7 @@ class LunarLanderAgent():
         self.DISCOUNT_FACTOR = 0.999
         self.EPS_START = 0.9
         self.EPS_END = 0.05
-        self.EPS_DECAY = 1000
+        self.EPS_DECAY = 10000
         self.TAU = 0.005
         self.LR = 1e-4
         self.optimizer = optim.AdamW(self.policy.parameters(), lr = self.LR, amsgrad = True)
